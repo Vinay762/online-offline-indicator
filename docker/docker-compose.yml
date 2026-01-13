@@ -1,0 +1,102 @@
+version: '3.9'
+
+services:
+  redis-node-1:
+    image: redis:7.2
+    command: ["redis-server", "/redis-conf/redis.conf"]
+    volumes:
+      - ./redis.conf:/redis-conf/redis.conf:ro
+    ports:
+      - '7000:6379'
+    networks:
+      - redis-cluster
+    restart: unless-stopped
+
+  redis-node-2:
+    image: redis:7.2
+    command: ["redis-server", "/redis-conf/redis.conf"]
+    volumes:
+      - ./redis.conf:/redis-conf/redis.conf:ro
+    ports:
+      - '7001:6379'
+    networks:
+      - redis-cluster
+    restart: unless-stopped
+
+  redis-node-3:
+    image: redis:7.2
+    command: ["redis-server", "/redis-conf/redis.conf"]
+    volumes:
+      - ./redis.conf:/redis-conf/redis.conf:ro
+    ports:
+      - '7002:6379'
+    networks:
+      - redis-cluster
+    restart: unless-stopped
+
+  redis-node-4:
+    image: redis:7.2
+    command: ["redis-server", "/redis-conf/redis.conf"]
+    volumes:
+      - ./redis.conf:/redis-conf/redis.conf:ro
+    ports:
+      - '7003:6379'
+    networks:
+      - redis-cluster
+    restart: unless-stopped
+
+  redis-node-5:
+    image: redis:7.2
+    command: ["redis-server", "/redis-conf/redis.conf"]
+    volumes:
+      - ./redis.conf:/redis-conf/redis.conf:ro
+    ports:
+      - '7004:6379'
+    networks:
+      - redis-cluster
+    restart: unless-stopped
+
+  redis-node-6:
+    image: redis:7.2
+    command: ["redis-server", "/redis-conf/redis.conf"]
+    volumes:
+      - ./redis.conf:/redis-conf/redis.conf:ro
+    ports:
+      - '7005:6379'
+    networks:
+      - redis-cluster
+    restart: unless-stopped
+
+  redis-cluster-create:
+    image: redis:7.2
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-node-4
+      - redis-node-5
+      - redis-node-6
+    networks:
+      - redis-cluster
+    entrypoint: ["/bin/bash", "-c"]
+    command: >-
+      set -euo pipefail;
+      echo "Waiting for Redis nodes";
+      for host in redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5 redis-node-6; do
+        until redis-cli -h "$host" -p 6379 ping >/dev/null 2>&1; do sleep 1; done;
+      done;
+      if redis-cli -h redis-node-1 -p 6379 cluster info 2>/dev/null | grep -q 'cluster_state:ok'; then
+        echo 'Cluster already configured';
+        exit 0;
+      fi;
+      echo 'Creating Redis Cluster';
+      redis-cli --cluster create \
+        redis-node-1:6379 redis-node-2:6379 redis-node-3:6379 \
+        redis-node-4:6379 redis-node-5:6379 redis-node-6:6379 \
+        --cluster-replicas 1 --cluster-yes;
+      echo 'Redis Cluster configured';
+    restart: "no"
+
+networks:
+  redis-cluster:
+    driver: bridge

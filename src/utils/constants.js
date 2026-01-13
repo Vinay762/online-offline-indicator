@@ -1,0 +1,13 @@
+const PRESENCE_TTL_SECONDS = 60;
+const TTL_REFRESH_INTERVAL_MS = 30 * 1000;
+const TTL_REFRESH_BATCH_SIZE = 1000;
+const WS_PORT = parseInt(process.env.WS_PORT || '8080', 10);
+const WS_MAX_PAYLOAD_BYTES = parseInt(process.env.WS_MAX_PAYLOAD_BYTES || String(4 * 1024), 10);
+
+module.exports = {
+  PRESENCE_TTL_SECONDS,
+  TTL_REFRESH_INTERVAL_MS,
+  TTL_REFRESH_BATCH_SIZE,
+  WS_PORT,
+  WS_MAX_PAYLOAD_BYTES
+};
